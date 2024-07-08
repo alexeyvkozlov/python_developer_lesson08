@@ -2,8 +2,8 @@
 # cd c:\python_developer
 # cd d:\python_developer
 # .\pydev\Scripts\activate
-# cd c:\python_developer\python_developer_lesson07_task2
-# cd d:\python_developer\python_developer_lesson07_task2
+# cd c:\python_developer\python_developer_lesson08
+# cd d:\python_developer\python_developer_lesson08
 #~~~~~~~~~~~~~~~~~~~~~~~~
 # python console_file_manager.py
 #~~~~~~~~~~~~~~~~~~~~~~~~
@@ -38,13 +38,15 @@ history = []
 # после выбора пользователь вводит название папки, создаем её в рабочей директории;
 def create_folder_01(folder_name: str) -> bool:
   retVal = False
-  # folder_name = input("Введите название папки для создания: ")
   try:
-    os.mkdir(folder_name)
-    print(f"Папка создана: `{folder_name}`")
-    retVal = True
+    if not os.path.exists(folder_name):
+      os.mkdir(folder_name)
+      print(f"Папка создана: {folder_name}")
+      retVal = True
+    else:
+      print(f"Ошибка. Папка уже существует: {folder_name}")
   except FileExistsError:
-    print(f"Ошибка. Папка уже существует: `{folder_name}`")
+    print(f"Ошибка. Папка уже существует: {folder_name}")
   return retVal
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -75,10 +77,8 @@ def copy_file_or_folder_03(name1: str, name2: str) -> bool:
   print(f"Файл/папка-1: `{fname1}`")
   print(f"Файл/папка-2: `{fname2}`")
   try:
-    if os.path.isfile(fname1):
-      os.system(f'copy {fname1} {fname2}')
-    else:
-      os.system(f'xcopy {fname1} {fname2} /E /I')
+    command = 'copy' if os.path.isfile(fname1) else 'xcopy'
+    os.system(f'{command} {fname1} {fname2}')
     print(f"Скопирован(а) : `{fname1}` -> `{fname2}`")
     retVal = True
   except FileNotFoundError:
@@ -90,32 +90,21 @@ def copy_file_or_folder_03(name1: str, name2: str) -> bool:
 # - просмотр содержимого рабочей директории
 # вывод всех объектов в рабочей папке;
 def list_directory_contents_04() -> list[str]:
-  retVal = []
-  for item in os.listdir():
-    retVal.append(item)
-  return retVal 
+  return [item for item in os.listdir()]
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~ 05
 # - посмотреть только папки
 # вывод только папок которые находятся в рабочей папке;
 def list_only_folders_05() -> list[str]:
-  retVal = []
-  for item in os.listdir():
-    if os.path.isdir(item):
-      retVal.append(item)
-  return retVal
+  return [item for item in os.listdir() if os.path.isdir(item)]
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~ 06
 # - посмотреть только файлы
 # вывод только файлов которые находятся в рабочей папке;
 def list_only_files_06() -> list[str]:
-  retVal = []
-  for item in os.listdir():
-    if os.path.isfile(item):
-      retVal.append(item)
-  return retVal
+  return [item for item in os.listdir() if os.path.isfile(item)]
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~ 07
@@ -144,17 +133,8 @@ def format_date(date):
   return f"{int(day)} {months[int(month) - 1]} {year} года"
 #~~~~~~~~~~~~~~~~~~~~~~~~
 def play_quiz_09(selected_people, answer_lst) -> int:
-  correct_answers = 0
-  incorrect_answers = 0
-  for i in range(len(selected_people)):
-    # print(f'{i}: {selected_people[i]}, {answer_lst[i]}')
-    # print(f'  {selected_people[i][0]}, {selected_people[i][1]}')
-    # 0: ('Вольфганг Амадей Моцарт', '27.01.1756'), 27.01.1756
-    #   Вольфганг Амадей Моцарт, 27.01.1756
-    if selected_people[i][1] == answer_lst[i]:
-      correct_answers += 1
-    else:
-      print(f"Неверно! Правильный ответ: {format_date(selected_people[i][1])}")
+  correct_answers = sum(1 for i in range(len(selected_people)) if selected_people[i][1] == answer_lst[i])
+  incorrect_answers = len(selected_people) - correct_answers
   return correct_answers
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -164,17 +144,10 @@ def play_quiz_09(selected_people, answer_lst) -> int:
 def save_directory_contents_to_file():
   prog_path = os.getcwd()
   fname = os.path.join(prog_path, "listdir.txt")
-  #~~~~~~~~~~~~~~~~~~~~~~~~
-  files = []
-  dirs = []
-  #~~~~~~~~~~~~~~~~~~~~~~~~
-  #~ получаем список файлов и папок в рабочей директории
-  for item in os.listdir():
-    if os.path.isfile(item):
-      files.append(item)
-    elif os.path.isdir(item):
-      dirs.append(item)
-  #~~~~~~~~~~~~~~~~~~~~~~~~
+  #~~~~~~~~~~~~~~~~~~~~~~
+  files = (item for item in os.listdir() if os.path.isfile(item))
+  dirs = (item for item in os.listdir() if os.path.isdir(item))
+  #~~~~~~~~~~~~~~~~~~~~
   #~ Записываем содержимое в файл listdir.txt
   with open(fname, "w") as file:
     file.write("files: " + ", ".join(files) + "\n")
