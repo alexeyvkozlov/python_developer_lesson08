@@ -1,0 +1,2 @@
+files: console_file_manager.py, t1.txt, t2.txt, test_filemanager.py, test_python.py
+dirs: .git, dir1
